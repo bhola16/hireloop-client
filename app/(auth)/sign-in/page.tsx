@@ -16,5 +16,9 @@ export default function SignInForm() {
     console.log("Sign In error:", error)
   }
 
-  return <AuthForm mode="sign-in" onSubmit={handleSignIn} />
+  return (
+    <main className="flex min-h-svh w-full items-center justify-center px-4 py-10">
+      <AuthForm mode="sign-in" onSubmit={handleSignIn} />
+    </main>
+  )
 }

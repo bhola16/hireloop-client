@@ -1,26 +1,57 @@
 "use client"
 
-import * as React from "react"
+import {
+  Building2Icon,
+  EyeIcon,
+  EyeOffIcon,
+  SearchIcon,
+  ShieldIcon,
+} from "lucide-react"
 import Link from "next/link"
-import { EyeIcon, EyeOffIcon } from "lucide-react"
+import * as React from "react"
 
+import { Logo } from "@/components/navbar"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
-import { Logo } from "@/components/navbar"
 import { cn } from "cn"
 
 type Mode = "sign-in" | "sign-up"
+
+export type UserRole = "seeker" | "recruiter" | "admin"
 
 export type FormData = {
   name: string
   email: string
   password: string
+  role: UserRole
 }
 
 type AuthFormProps = {
   mode: Mode
   onSubmit?: (data: FormData) => void | Promise<void>
 }
+
+const roles: {
+  value: UserRole
+  label: string
+  icon: React.ReactNode
+}[] = [
+  {
+    value: "seeker",
+    label: "Seeker",
+    icon: <SearchIcon className="size-4" />,
+  },
+  {
+    value: "recruiter",
+    label: "Recruiter",
+    icon: <Building2Icon className="size-4" />,
+  },
+  {
+    value: "admin",
+    label: "Admin",
+    icon: <ShieldIcon className="size-4" />,
+  },
+]
 
 const modes: { value: Mode; label: string; href: string }[] = [
   { value: "sign-in", label: "Sign In", href: "/sign-in" },
@@ -46,14 +77,25 @@ function AuthForm({ mode, onSubmit }: AuthFormProps) {
     name: "",
     email: "",
     password: "",
+    role: "seeker",
   })
 
   const [showPassword, setShowPassword] = React.useState(false)
 
-  function handleChange(field: keyof FormData) {
+  function handleChange(field: "name" | "email" | "password") {
     return (event: React.ChangeEvent<HTMLInputElement>) => {
-      setData((prev) => ({ ...prev, [field]: event.target.value }))
+      setData((prev) => ({
+        ...prev,
+        [field]: event.target.value,
+      }))
     }
+  }
+
+  function handleRoleChange(event: React.ChangeEvent<HTMLInputElement>) {
+    setData((prev) => ({
+      ...prev,
+      role: event.target.value as UserRole,
+    }))
   }
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
@@ -61,14 +103,22 @@ function AuthForm({ mode, onSubmit }: AuthFormProps) {
 
     console.log(
       mode === "sign-in" ? "[sign-in] submitted:" : "[sign-up] submitted:",
-      mode === "sign-up" ? data : { email: data.email, password: data.password }
+      mode === "sign-up"
+        ? {
+            name: data.name,
+            email: data.email,
+            role: data.role,
+          }
+        : {
+            email: data.email,
+          }
     )
 
     await onSubmit?.(data)
   }
 
   return (
-    <div className="w-full max-w-md">
+    <div className="mx-auto w-full max-w-md">
       <div className="rounded-3xl border border-border/70 bg-card/40 p-6 backdrop-blur-xs sm:p-8">
         {/* Brand */}
         <div className="flex flex-col items-center gap-4 text-center">
@@ -84,7 +134,6 @@ function AuthForm({ mode, onSubmit }: AuthFormProps) {
             </p>
           </div>
         </div>
-
         {/* Toggle between sign in / sign up */}
         <div
           role="tablist"
@@ -108,7 +157,6 @@ function AuthForm({ mode, onSubmit }: AuthFormProps) {
             </Link>
           ))}
         </div>
-
         {/* Form */}
         <form onSubmit={handleSubmit} className="mt-6 flex flex-col gap-4">
           {/* Full Name */}
@@ -125,6 +173,42 @@ function AuthForm({ mode, onSubmit }: AuthFormProps) {
                 onChange={handleChange("name")}
                 className={inputStyles}
               />
+            </FormField>
+          )}
+
+          {/* Role */}
+          {mode === "sign-up" && (
+            <FormField label="I am a" htmlFor="role">
+              <div
+                id="role"
+                role="radiogroup"
+                aria-label="Account type"
+                className="flex gap-2"
+              >
+                {roles.map((item) => (
+                  <label
+                    key={item.value}
+                    className={cn(
+                      "flex flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-xl border py-2.5 text-sm font-medium transition-colors",
+                      data.role === item.value
+                        ? "border-indigo-500 bg-indigo-500/10 text-indigo-600"
+                        : "border-border text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    <input
+                      type="radio"
+                      name="role"
+                      value={item.value}
+                      checked={data.role === item.value}
+                      onChange={handleRoleChange}
+                      className="sr-only"
+                    />
+
+                    {item.icon}
+                    {item.label}
+                  </label>
+                ))}
+              </div>
             </FormField>
           )}
 
@@ -200,7 +284,6 @@ function AuthForm({ mode, onSubmit }: AuthFormProps) {
             {mode === "sign-up" ? "Create Account" : "Sign In"}
           </Button>
         </form>
-
         {/* Divider */}
         <div className="mt-6 flex items-center gap-4">
           <Separator className="flex-1" />
@@ -211,7 +294,6 @@ function AuthForm({ mode, onSubmit }: AuthFormProps) {
 
           <Separator className="flex-1" />
         </div>
-
         {/* Social Providers */}
         <div className="mt-4 flex gap-3">
           <Button
@@ -234,7 +316,6 @@ function AuthForm({ mode, onSubmit }: AuthFormProps) {
             Github
           </Button>
         </div>
-
         {/* Toggle Link */}
         <p className="mt-6 text-center text-sm text-muted-foreground">
           {mode === "sign-up" ? (
