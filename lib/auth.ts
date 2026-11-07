@@ -2,14 +2,22 @@ import { mongodbAdapter } from "@better-auth/mongo-adapter"
 import { betterAuth } from "better-auth"
 import { MongoClient } from "mongodb"
 
-const client = new MongoClient("mongodb://localhost:27017/database")
-const db = client.db('hireloopdb')
-
+const client = new MongoClient(process.env.MONGODB_URL as string)
+const db = client.db("hireloop")
 
 export const auth = betterAuth({
-  baseURL: process.env.BETTER_AUTH_URL, 
+  baseURL: process.env.BETTER_AUTH_URL,
   emailAndPassword: {
     enabled: true,
+  },
+
+  user: {
+    additionalFields: {
+      role: {
+        type: ["seeker", "recruiter", "admin"],
+        input: false,
+      },
+    },
   },
 
   socialProviders: {

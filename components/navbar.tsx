@@ -1,9 +1,9 @@
 "use client"
 
-import * as React from "react"
-import Link from "next/link"
-import { MenuIcon } from "lucide-react"
 import { cn } from "cn"
+import { MenuIcon } from "lucide-react"
+import Link from "next/link"
+import * as React from "react"
 
 import { Button, buttonVariants } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
@@ -37,12 +37,15 @@ function Logo({
       {...props}
     >
       <span className="text-[#4d90fe]">hirel</span>
+
       <span aria-hidden="true" className="flex items-center">
         <span className="size-[0.9em] rounded-full border-[0.13em] border-[#4d90fe]" />
+
         <span className="-ml-[0.28em] flex size-[0.9em] items-center justify-center rounded-full border-[0.13em] border-[#f97316]">
           <span className="size-[0.26em] rounded-full bg-[#f97316]" />
         </span>
       </span>
+
       <span className="text-[#f97316]">p</span>
     </Link>
   )
@@ -80,12 +83,15 @@ function Navbar() {
             Sign In
           </Link>
 
-          <Button
-            render={<Link href="/sign-up" />}
-            className="h-10 rounded-lg bg-indigo-500 px-5 text-white hover:bg-indigo-600"
+          <Link
+            href="/sign-up"
+            className={buttonVariants({
+              className:
+                "h-10 rounded-lg bg-indigo-500 px-5 text-white hover:bg-indigo-600",
+            })}
           >
             Get Started
-          </Button>
+          </Link>
         </div>
 
         {/* Mobile navigation */}
@@ -106,9 +112,11 @@ function Navbar() {
           <SheetContent side="right">
             <SheetHeader className="flex-row items-center">
               <SheetTitle className="sr-only">Menu</SheetTitle>
+
               <Logo onClick={() => setOpen(false)} />
             </SheetHeader>
 
+            {/* Mobile links */}
             <nav aria-label="Mobile" className="flex flex-col gap-1 px-4">
               {navLinks.map((link) => (
                 <SheetClose
@@ -125,8 +133,10 @@ function Navbar() {
               ))}
             </nav>
 
+            {/* Mobile authentication links */}
             <div className="mt-auto flex flex-col gap-2.5 px-4 pb-4">
               <Separator />
+
               <SheetClose
                 render={
                   <Link
@@ -140,6 +150,7 @@ function Navbar() {
               >
                 Sign In
               </SheetClose>
+
               <SheetClose
                 render={
                   <Link
@@ -161,4 +172,4 @@ function Navbar() {
   )
 }
 
-export { Navbar }
+export { Logo, Navbar }
