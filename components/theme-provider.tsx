@@ -22,15 +22,11 @@ function ThemeProvider({
 }
 
 function isTypingTarget(target: EventTarget | null) {
-  if (!(target instanceof HTMLElement)) {
-    return false
-  }
+  if (!(target instanceof HTMLElement)) return false
 
   return (
     target.isContentEditable ||
-    target.tagName === "INPUT" ||
-    target.tagName === "TEXTAREA" ||
-    target.tagName === "SELECT"
+    ["INPUT", "TEXTAREA", "SELECT"].includes(target.tagName)
   )
 }
 
@@ -39,19 +35,16 @@ function ThemeHotkey() {
 
   React.useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
-      if (event.defaultPrevented || event.repeat) {
-        return
-      }
-
-      if (event.metaKey || event.ctrlKey || event.altKey) {
-        return
-      }
-
-      if (typeof event.key !== "string" || event.key.toLowerCase() !== "d") {
-        return
-      }
-
-      if (isTypingTarget(event.target)) {
+      if (
+        event.defaultPrevented ||
+        event.repeat ||
+        event.metaKey ||
+        event.ctrlKey ||
+        event.altKey ||
+        typeof event.key !== "string" ||
+        event.key.toLowerCase() !== "d" ||
+        isTypingTarget(event.target)
+      ) {
         return
       }
 
