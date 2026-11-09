@@ -1,7 +1,7 @@
 "use client"
 
 import { createJob } from "@/lib/actions/jobs"
-import { JobData } from "@/type/Type"
+import type { JobData } from "@/type/Type"
 import { Button } from "@base-ui/react"
 import { ArrowLeft, BriefcaseBusiness, Plus, X } from "lucide-react"
 import Link from "next/link"
@@ -66,7 +66,7 @@ export default function NewJobPage() {
       applicationDeadline:
         String(formData.get("applicationDeadline")) || undefined,
 
-      status: "published",
+      status: formData.get("status") as JobData["status"],
     }
 
     try {
@@ -103,6 +103,7 @@ export default function NewJobPage() {
             <h1 className="text-2xl font-bold tracking-tight">
               Create a New Job
             </h1>
+
             <p className="mt-1 text-sm text-muted-foreground">
               Fill in the details below to publish a new job opportunity.
             </p>
@@ -120,6 +121,7 @@ export default function NewJobPage() {
         <section className="rounded-xl border bg-card p-5 sm:p-6">
           <div className="mb-6">
             <h2 className="text-lg font-semibold">Basic Information</h2>
+
             <p className="mt-1 text-sm text-muted-foreground">
               Provide the essential information about this position.
             </p>
@@ -130,6 +132,7 @@ export default function NewJobPage() {
               <label htmlFor="title" className={labelClass}>
                 Job Title <span className="text-destructive">*</span>
               </label>
+
               <input
                 id="title"
                 name="title"
@@ -143,6 +146,7 @@ export default function NewJobPage() {
               <label htmlFor="company" className={labelClass}>
                 Company Name <span className="text-destructive">*</span>
               </label>
+
               <input
                 id="company"
                 name="company"
@@ -156,6 +160,7 @@ export default function NewJobPage() {
               <label htmlFor="category" className={labelClass}>
                 Job Category <span className="text-destructive">*</span>
               </label>
+
               <select
                 id="category"
                 name="category"
@@ -184,6 +189,7 @@ export default function NewJobPage() {
         <section className="rounded-xl border bg-card p-5 sm:p-6">
           <div className="mb-6">
             <h2 className="text-lg font-semibold">Employment Details</h2>
+
             <p className="mt-1 text-sm text-muted-foreground">
               Specify the type and location of the job.
             </p>
@@ -194,6 +200,7 @@ export default function NewJobPage() {
               <label htmlFor="employmentType" className={labelClass}>
                 Employment Type <span className="text-destructive">*</span>
               </label>
+
               <select
                 id="employmentType"
                 name="employmentType"
@@ -216,6 +223,7 @@ export default function NewJobPage() {
               <label htmlFor="workplaceType" className={labelClass}>
                 Workplace Type <span className="text-destructive">*</span>
               </label>
+
               <select
                 id="workplaceType"
                 name="workplaceType"
@@ -236,6 +244,7 @@ export default function NewJobPage() {
               <label htmlFor="location" className={labelClass}>
                 Job Location <span className="text-destructive">*</span>
               </label>
+
               <input
                 id="location"
                 name="location"
@@ -249,15 +258,14 @@ export default function NewJobPage() {
               <label htmlFor="experience" className={labelClass}>
                 Experience Level
               </label>
+
               <select
                 id="experience"
                 name="experience"
                 defaultValue=""
                 className={inputClass}
               >
-                <option value="" disabled>
-                  Select experience level
-                </option>
+                <option value="">Select experience level</option>
                 <option value="entry">Entry Level</option>
                 <option value="junior">Junior</option>
                 <option value="mid">Mid Level</option>
@@ -272,6 +280,7 @@ export default function NewJobPage() {
         <section className="rounded-xl border bg-card p-5 sm:p-6">
           <div className="mb-6">
             <h2 className="text-lg font-semibold">Salary Information</h2>
+
             <p className="mt-1 text-sm text-muted-foreground">
               Provide the expected compensation for this position.
             </p>
@@ -282,6 +291,7 @@ export default function NewJobPage() {
               <label htmlFor="salaryMin" className={labelClass}>
                 Minimum Salary
               </label>
+
               <input
                 id="salaryMin"
                 name="salaryMin"
@@ -296,6 +306,7 @@ export default function NewJobPage() {
               <label htmlFor="salaryMax" className={labelClass}>
                 Maximum Salary
               </label>
+
               <input
                 id="salaryMax"
                 name="salaryMax"
@@ -310,6 +321,7 @@ export default function NewJobPage() {
               <label htmlFor="currency" className={labelClass}>
                 Currency
               </label>
+
               <select
                 id="currency"
                 name="currency"
@@ -329,6 +341,7 @@ export default function NewJobPage() {
         <section className="rounded-xl border bg-card p-5 sm:p-6">
           <div className="mb-6">
             <h2 className="text-lg font-semibold">Job Description</h2>
+
             <p className="mt-1 text-sm text-muted-foreground">
               Describe the role and what you expect from candidates.
             </p>
@@ -339,6 +352,7 @@ export default function NewJobPage() {
               <label htmlFor="description" className={labelClass}>
                 Job Description <span className="text-destructive">*</span>
               </label>
+
               <textarea
                 id="description"
                 name="description"
@@ -353,6 +367,7 @@ export default function NewJobPage() {
               <label htmlFor="responsibilities" className={labelClass}>
                 Responsibilities
               </label>
+
               <textarea
                 id="responsibilities"
                 name="responsibilities"
@@ -366,6 +381,7 @@ export default function NewJobPage() {
               <label htmlFor="requirements" className={labelClass}>
                 Requirements
               </label>
+
               <textarea
                 id="requirements"
                 name="requirements"
@@ -381,6 +397,7 @@ export default function NewJobPage() {
         <section className="rounded-xl border bg-card p-5 sm:p-6">
           <div className="mb-6">
             <h2 className="text-lg font-semibold">Required Skills</h2>
+
             <p className="mt-1 text-sm text-muted-foreground">
               Add skills that candidates should have for this position.
             </p>
@@ -417,6 +434,7 @@ export default function NewJobPage() {
                 className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1.5 text-sm font-medium text-primary"
               >
                 {skill}
+
                 <Button
                   type="button"
                   onClick={() => removeSkill(skill)}
@@ -434,22 +452,44 @@ export default function NewJobPage() {
         <section className="rounded-xl border bg-card p-5 sm:p-6">
           <div className="mb-6">
             <h2 className="text-lg font-semibold">Application Settings</h2>
+
             <p className="mt-1 text-sm text-muted-foreground">
-              Set the deadline for receiving applications.
+              Set the deadline and status for this job.
             </p>
           </div>
 
-          <div className="max-w-md">
-            <label htmlFor="applicationDeadline" className={labelClass}>
-              Application Deadline
-            </label>
-            <input
-              id="applicationDeadline"
-              name="applicationDeadline"
-              type="date"
-              min={new Date().toISOString().split("T")[0]}
-              className={inputClass}
-            />
+          <div className="grid gap-5 sm:grid-cols-2">
+            <div>
+              <label htmlFor="applicationDeadline" className={labelClass}>
+                Application Deadline
+              </label>
+
+              <input
+                id="applicationDeadline"
+                name="applicationDeadline"
+                type="date"
+                min={new Date().toISOString().split("T")[0]}
+                className={inputClass}
+              />
+            </div>
+
+            {/* Job Status */}
+            <div>
+              <label htmlFor="status" className={labelClass}>
+                Job Status
+              </label>
+
+              <select
+                id="status"
+                name="status"
+                defaultValue="active"
+                className={inputClass}
+              >
+                <option value="active">Active</option>
+                <option value="draft">Draft</option>
+                <option value="closed">Closed</option>
+              </select>
+            </div>
           </div>
         </section>
 

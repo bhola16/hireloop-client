@@ -11,10 +11,38 @@ export const createJob = async (data: JobData) => {
     body: JSON.stringify(data),
   })
 
-  const result = await res.json()
+  const result = await res.json().catch(() => null)
 
   if (!res.ok) {
-    throw new Error(result.message || "Failed to create job")
+    throw new Error(result?.message || "Failed to create job")
+  }
+
+  return result
+}
+
+export const deleteJob = async (id: string) => {
+  const res = await fetch(`${BASE_URL}/jobs/${id}`, {
+    method: "DELETE",
+  })
+
+  const result = await res.json().catch(() => null)
+
+  if (!res.ok) {
+    throw new Error(result?.message || "Failed to delete job")
+  }
+
+  return result
+}
+
+export const getJobs = async () => {
+  const res = await fetch(`${BASE_URL}/jobs`, {
+    cache: "no-store",
+  })
+
+  const result = await res.json().catch(() => null)
+
+  if (!res.ok) {
+    throw new Error(result?.message || "Failed to fetch jobs")
   }
 
   return result

@@ -148,8 +148,8 @@ export function DashBoardSidebar() {
 
   const userRole = session?.user?.role
 
-  console.log("Session:", session)
-  console.log("User role:", session?.user?.role)
+  // console.log("Session:", session)
+  // console.log("User role:", session?.user?.role)
 
   const role: UserRole | undefined =
     typeof userRole === "string" &&
