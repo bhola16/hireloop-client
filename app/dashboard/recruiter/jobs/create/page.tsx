@@ -1,15 +1,18 @@
 "use client"
 
+import { toast } from "@/components/ui/toast"
 import { createJob } from "@/lib/actions/jobs"
 import type { JobData } from "@/type/Type"
 import { Button } from "@base-ui/react"
 import { ArrowLeft, BriefcaseBusiness, Plus, X } from "lucide-react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { useState } from "react"
 
 export default function NewJobPage() {
   const [skills, setSkills] = useState<string[]>([])
   const [skillInput, setSkillInput] = useState("")
+  const router = useRouter()
 
   const addSkill = () => {
     const skill = skillInput.trim()
@@ -72,13 +75,17 @@ export default function NewJobPage() {
     try {
       const result = await createJob(jobData)
 
-      console.log("Job created successfully:", result)
+      if (result.insertedId) {
+        // console.log("Job created successfully:", result)
+        toast.add({
+          title: "Job Created",
+          description: "Te job has been successfully created.",
+        })
+      }
+      router.push("/dashboard/recruiter/jobs")
 
-      // Add your success toast here if needed.
     } catch (error) {
-      console.error("Error creating job:", error)
-
-      // Add your error toast here if needed.
+      toast.close("Failed to create a new job")
     }
   }
 
