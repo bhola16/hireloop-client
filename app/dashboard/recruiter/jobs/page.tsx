@@ -39,12 +39,14 @@ const statusStyles: Record<Exclude<JobStatus, "all">, string> = {
   closed: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",
 }
 
+// Format salary
 const formatSalary = (job: ManagedJob) => {
   if (!job.salaryMin && !job.salaryMax) return "Negotiable"
 
   const formatter = new Intl.NumberFormat("en-US")
 
   const min = job.salaryMin ? formatter.format(job.salaryMin) : null
+
   const max = job.salaryMax ? formatter.format(job.salaryMax) : null
 
   if (min && max) {
@@ -54,12 +56,15 @@ const formatSalary = (job: ManagedJob) => {
   return `${job.currency} ${min || max}`
 }
 
+// Format date
 const formatDate = (date?: string) => {
   if (!date) return "Not specified"
 
   const parsedDate = new Date(`${date.slice(0, 10)}T00:00:00`)
 
-  if (Number.isNaN(parsedDate.getTime())) return "Not specified"
+  if (Number.isNaN(parsedDate.getTime())) {
+    return "Not specified"
+  }
 
   return parsedDate.toLocaleDateString("en-GB", {
     day: "2-digit",
@@ -68,6 +73,7 @@ const formatDate = (date?: string) => {
   })
 }
 
+// Normalize job status
 const getJobStatus = (status?: string): Exclude<JobStatus, "all"> => {
   if (status === "draft" || status === "closed") {
     return status
@@ -122,7 +128,7 @@ const ManageJobsPage = () => {
     setSelectedJob(job)
   }
 
-  // Delete Job From UI After Successful API Deletion
+  // Remove Job From UI After Successful API Deletion
   const handleJobDeleted = (id: string) => {
     setJobs((prevJobs) => prevJobs.filter((job) => job.id !== id))
 
@@ -163,9 +169,18 @@ const ManageJobsPage = () => {
           </p>
         </div>
 
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <BriefcaseBusiness className="size-4" />
-          {jobs.length} Total Jobs
+        <div className="flex flex-col gap-3">
+          <Link
+            href="/dashboard/recruiter/jobs/create"
+            className="rounded-2xl border bg-blue-500 px-4 py-2 text-center text-white transition hover:bg-blue-600"
+          >
+            Create new Job
+          </Link>
+
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <BriefcaseBusiness className="size-4" />
+            {jobs.length} Total Jobs
+          </div>
         </div>
       </div>
 
@@ -324,18 +339,18 @@ const ManageJobsPage = () => {
                       {/* Actions */}
                       <td className="px-5 py-4">
                         <div className="flex items-center justify-center gap-2">
-                          <button
-                            type="button"
-                            onClick={() => handleView(job)}
+                          <Link
+                            href={`/dashboard/recruiter/jobs/${job.id}`}
                             title="View job"
                             aria-label="View job"
                             className="rounded-md border p-2 text-muted-foreground transition hover:bg-muted hover:text-foreground"
                           >
                             <Eye className="size-4" />
-                          </button>
+                          </Link>
 
                           <Link
-                            href={`/dashboard/recruiter/jobs/edit/${job.id}`}
+                            href={`/dashb
+                              oard/recruiter/jobs/edit/${job.id}`}
                             title="Edit job"
                             aria-label="Edit job"
                             className="rounded-md border p-2 text-muted-foreground transition hover:bg-muted hover:text-primary"
@@ -425,14 +440,13 @@ const ManageJobsPage = () => {
 
                 {/* Mobile Actions */}
                 <div className="flex items-center gap-2 border-t pt-3">
-                  <button
-                    type="button"
-                    onClick={() => handleView(job)}
+                  <Link
+                    href={`/dashboard/recruiter/jobs/${job.id}`}
                     className="flex flex-1 items-center justify-center gap-2 rounded-md border px-3 py-2 text-sm transition hover:bg-muted"
                   >
                     <Eye className="size-4" />
                     View
-                  </button>
+                  </Link>
 
                   <Link
                     href={`/dashboard/recruiter/jobs/edit/${job.id}`}
@@ -468,148 +482,7 @@ const ManageJobsPage = () => {
             aria-labelledby="job-dialog-title"
             className="max-h-[85vh] w-full max-w-2xl overflow-y-auto rounded-xl bg-background p-6 shadow-xl"
             onClick={(e) => e.stopPropagation()}
-          >
-            {/* Dialog Header */}
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <h2 id="job-dialog-title" className="text-xl font-bold">
-                  {selectedJob.title}
-                </h2>
-
-                <p className="mt-1 text-sm text-muted-foreground">
-                  {selectedJob.company}
-                </p>
-              </div>
-
-              <button
-                type="button"
-                onClick={() => setSelectedJob(null)}
-                aria-label="Close dialog"
-                className="rounded-md p-2 text-muted-foreground transition hover:bg-muted hover:text-foreground"
-              >
-                <X className="size-5" />
-              </button>
-            </div>
-
-            {/* Job Information */}
-            <div className="mt-5 grid grid-cols-1 gap-4 text-sm sm:grid-cols-2">
-              <div>
-                <p className="text-muted-foreground">Location</p>
-                <p className="mt-1 font-medium">{selectedJob.location}</p>
-              </div>
-
-              <div>
-                <p className="text-muted-foreground">Employment Type</p>
-                <p className="mt-1 font-medium capitalize">
-                  {selectedJob.employmentType}
-                </p>
-              </div>
-
-              <div>
-                <p className="text-muted-foreground">Workplace</p>
-                <p className="mt-1 font-medium capitalize">
-                  {selectedJob.workplaceType}
-                </p>
-              </div>
-
-              <div>
-                <p className="text-muted-foreground">Experience</p>
-                <p className="mt-1 font-medium capitalize">
-                  {selectedJob.experience || "Not specified"}
-                </p>
-              </div>
-
-              <div>
-                <p className="text-muted-foreground">Salary</p>
-                <p className="mt-1 font-medium">{formatSalary(selectedJob)}</p>
-              </div>
-
-              <div>
-                <p className="text-muted-foreground">Application Deadline</p>
-                <p className="mt-1 font-medium">
-                  {formatDate(selectedJob.applicationDeadline)}
-                </p>
-              </div>
-
-              <div>
-                <p className="text-muted-foreground">Applicants</p>
-                <p className="mt-1 font-medium">
-                  {selectedJob.applicants ?? 0}
-                </p>
-              </div>
-
-              <div>
-                <p className="text-muted-foreground">Status</p>
-                <span
-                  className={`mt-1 inline-flex rounded-full px-3 py-1 text-xs font-medium capitalize ${
-                    statusStyles[getJobStatus(selectedJob.status)]
-                  }`}
-                >
-                  {getJobStatus(selectedJob.status)}
-                </span>
-              </div>
-            </div>
-
-            {/* Job Description */}
-            <div className="mt-6 space-y-5">
-              <div>
-                <h3 className="font-semibold">Job Description</h3>
-
-                <p className="mt-1 text-sm whitespace-pre-line text-muted-foreground">
-                  {selectedJob.description}
-                </p>
-              </div>
-
-              <div>
-                <h3 className="font-semibold">Responsibilities</h3>
-
-                <p className="mt-1 text-sm whitespace-pre-line text-muted-foreground">
-                  {selectedJob.responsibilities || "Not specified"}
-                </p>
-              </div>
-
-              <div>
-                <h3 className="font-semibold">Requirements</h3>
-
-                <p className="mt-1 text-sm whitespace-pre-line text-muted-foreground">
-                  {selectedJob.requirements || "Not specified"}
-                </p>
-              </div>
-
-              {/* Skills */}
-              <div>
-                <h3 className="font-semibold">Skills</h3>
-
-                <div className="mt-2 flex flex-wrap gap-2">
-                  {selectedJob.skills?.length ? (
-                    selectedJob.skills.map((skill) => (
-                      <span
-                        key={skill}
-                        className="rounded-md bg-muted px-3 py-1 text-xs"
-                      >
-                        {skill}
-                      </span>
-                    ))
-                  ) : (
-                    <p className="text-sm text-muted-foreground">
-                      No skills specified.
-                    </p>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {/* Dialog Footer */}
-            <div className="mt-6 flex justify-end">
-              <button
-                type="button"
-                onClick={() => setSelectedJob(null)}
-                className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition hover:opacity-90"
-              >
-                Close
-              </button>
-            </div>
-          </div>
+          ></div>
         </div>
       )}
     </div>
