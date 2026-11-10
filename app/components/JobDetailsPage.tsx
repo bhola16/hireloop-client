@@ -1,6 +1,6 @@
 "use client"
 
-import { getJobs } from "@/lib/api/jobs"
+import { getJobById } from "@/lib/api/jobs"
 import type { JobData } from "@/type/Type"
 import {
   ArrowLeft,
@@ -18,14 +18,6 @@ import { useEffect, useState } from "react"
 
 type ManagedJob = JobData & {
   id: string
-  applicants?: number
-  createdAt?: string
-  status?: string
-}
-
-type ApiJob = JobData & {
-  _id?: string
-  id?: string
   applicants?: number
   createdAt?: string
   status?: string
@@ -85,32 +77,31 @@ export default function JobDetailsPage({ jobId }: JobDetailsPageProps) {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState("")
 
+  // Fetch selected job from the backend
   useEffect(() => {
     const fetchJobDetails = async () => {
       try {
         setIsLoading(true)
         setError("")
 
-        const data: ApiJob[] = await getJobs()
-
-        const selectedJob = data.find((item) => (item.id || item._id) === jobId)
-
-        if (!selectedJob) {
-          setError("The requested job could not be found.")
-          return
-        }
+        const data = await getJobById(jobId)
 
         setJob({
-          ...selectedJob,
-          id: selectedJob.id || selectedJob._id || "",
-          applicants: selectedJob.applicants ?? 0,
-          createdAt: selectedJob.createdAt ?? "",
-          status: getStatus(selectedJob.status),
-          skills: selectedJob.skills ?? [],
+          ...data,
+          id: data._id,
+          applicants: data.applicants ?? 0,
+          createdAt: data.createdAt ?? "",
+          status: getStatus(data.status),
+          skills: data.skills ?? [],
         })
       } catch (err) {
         console.error("Failed to fetch job details:", err)
-        setError("Something went wrong while loading job details.")
+
+        setError(
+          err instanceof Error
+            ? err.message
+            : "Something went wrong while loading job details."
+        )
       } finally {
         setIsLoading(false)
       }
@@ -125,6 +116,7 @@ export default function JobDetailsPage({ jobId }: JobDetailsPageProps) {
       <div className="flex min-h-[60vh] items-center justify-center">
         <div className="flex flex-col items-center gap-3">
           <div className="size-9 animate-spin rounded-full border-4 border-primary/20 border-t-primary" />
+
           <p className="text-sm text-muted-foreground">
             Loading job details...
           </p>
