@@ -2,8 +2,8 @@ import type { JobData } from "@/type/Type"
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000"
 
-export const getJobs = async () => {
-  const res = await fetch(`${BASE_URL}/jobs`, {
+export const getJobs = async (query =""):Promise<JobData[]> => {
+  const res = await fetch(`${BASE_URL}/jobs?${query}`, {
     cache: "no-store",
   })
 
@@ -29,3 +29,5 @@ export const getJobById = async (id: string) => {
     status?: string
   }
 }
+
+
