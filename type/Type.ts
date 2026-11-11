@@ -1,4 +1,5 @@
 export type JobData = {
+  _id: string
   title: string
   company: string
   category: string
@@ -24,4 +25,6 @@ export type JobData = {
   applicationDeadline?: string
 
   status?: "draft" | "published"
+  updatedAt: string
+  createdAt: string
 }

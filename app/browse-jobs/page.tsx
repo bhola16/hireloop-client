@@ -1,4 +1,7 @@
+
 import { getJobs } from "@/lib/api/jobs"
+import { JobData } from "@/type/Type"
+import BrowseJobsClient from "../components/BrowseJobsClient"
 
 const BrowseJobsPage = async ({
   searchParams,
@@ -19,17 +22,9 @@ const BrowseJobsPage = async ({
     }
   })
 
-  const query = urlSearch.toString()
+  const jobs: JobData[] = await getJobs(urlSearch.toString())
 
-  const jobs = await getJobs(query)
-
-  return (
-    <div>
-      <h1>Browse Jobs..</h1>
-
-      <pre>{JSON.stringify(jobs, null, 2)}</pre>
-    </div>
-  )
+  return <BrowseJobsClient jobs={jobs} />
 }
 
 export default BrowseJobsPage

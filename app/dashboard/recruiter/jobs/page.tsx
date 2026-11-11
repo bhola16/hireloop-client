@@ -489,4 +489,4 @@ const ManageJobsPage = () => {
   )
 }
 
-export default ManageJobsPage
+export default ManageJobsPage;

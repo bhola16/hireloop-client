@@ -1,6 +1,8 @@
 "use client"
 
+import { Button } from "@/components/ui/button"
 import { getJobById } from "@/lib/api/jobs"
+import { useSession } from "@/lib/auth-client"
 import type { JobData } from "@/type/Type"
 import {
   ArrowLeft,
@@ -14,6 +16,7 @@ import {
   Users,
 } from "lucide-react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 
 type ManagedJob = JobData & {
@@ -76,6 +79,26 @@ export default function JobDetailsPage({ jobId }: JobDetailsPageProps) {
   const [job, setJob] = useState<ManagedJob | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState("")
+
+  const router = useRouter()
+  const { data: session } = useSession()
+  const user = session?.user
+
+  // Handle Apply Now
+  const handleApplyNow = () => {
+    if (!job) return
+
+    const applicationPath = `/dashboard/recruiter/jobs/${job.id}`
+
+    if (!user) {
+      router.push(`/sign-in?redirectTo=${encodeURIComponent(applicationPath)}`)
+      return
+    } else {
+      console.log("Save the application to the database")
+    }
+
+    router.push(applicationPath)
+  }
 
   // Fetch selected job from the backend
   useEffect(() => {
@@ -200,16 +223,28 @@ export default function JobDetailsPage({ jobId }: JobDetailsPageProps) {
             </div>
           </div>
 
-          {/* Edit Job */}
-          <Link
-            href={`/dashboard/recruiter/jobs/edit/${job.id}`}
-            title="Edit job"
-            aria-label="Edit job"
-            className="flex items-center justify-center gap-2 rounded-md border p-2 text-muted-foreground transition hover:bg-muted hover:text-primary"
-          >
-            <Pencil className="size-4" />
-            <span>Edit Job</span>
-          </Link>
+          <div className="flex flex-col gap-3 sm:flex-row">
+            {/* Edit Job */}
+            <Link
+              href={`/dashboard/recruiter/jobs/edit/${job.id}`}
+              title="Edit job"
+              aria-label="Edit job"
+              className="flex items-center justify-center gap-2 rounded-md border px-4 py-2 text-sm text-muted-foreground transition hover:bg-muted hover:text-primary"
+            >
+              <Pencil className="size-4" />
+              <span>Edit Job</span>
+            </Link>
+
+            {/* Apply Now */}
+            <Button
+              type="button"
+              onClick={handleApplyNow}
+              disabled={status !== "active"}
+              className="rounded-md px-5 py-5 text-sm font-medium"
+            >
+              Apply Now
+            </Button>
+          </div>
         </div>
       </div>
 
