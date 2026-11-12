@@ -1,6 +1,13 @@
+
 "use client"
 
 import { Button } from "@/components/ui/button"
+import { toast } from "@/components/ui/toast"
+import {
+  applyToJob,
+  checkJobApplication,
+  withdrawApplication,
+} from "@/lib/actions/jobs"
 import { getJobById } from "@/lib/api/jobs"
 import { useSession } from "@/lib/auth-client"
 import type { JobData } from "@/type/Type"
@@ -24,6 +31,7 @@ type ManagedJob = JobData & {
   applicants?: number
   createdAt?: string
   status?: string
+  _id: string
 }
 
 type JobDetailsPageProps = {
@@ -44,7 +52,11 @@ const formatDate = (date?: string) => {
   })
 }
 
-const formatSalary = (min?: number, max?: number, currency?: string) => {
+const formatSalary = (
+  min?: number,
+  max?: number,
+  currency?: string
+) => {
   if (min == null && max == null) return "Negotiable"
 
   const symbol =
@@ -75,30 +87,20 @@ const getStatus = (status?: string) => {
   return "active"
 }
 
-export default function JobDetailsPage({ jobId }: JobDetailsPageProps) {
+export default function JobDetailsPage({
+  jobId,
+}: JobDetailsPageProps) {
   const [job, setJob] = useState<ManagedJob | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState("")
+  const [hasApplied, setHasApplied] = useState(false)
+  const [isApplicationLoading, setIsApplicationLoading] = useState(false)
+  const [isApplicationStatusLoading, setIsApplicationStatusLoading] =
+    useState(true)
 
   const router = useRouter()
-  const { data: session } = useSession()
+  const { data: session, isPending: isSessionLoading } = useSession()
   const user = session?.user
-
-  // Handle Apply Now
-  const handleApplyNow = () => {
-    if (!job) return
-
-    const applicationPath = `/dashboard/recruiter/jobs/${job.id}`
-
-    if (!user) {
-      router.push(`/sign-in?redirectTo=${encodeURIComponent(applicationPath)}`)
-      return
-    } else {
-      console.log("Save the application to the database")
-    }
-
-    router.push(applicationPath)
-  }
 
   // Fetch selected job from the backend
   useEffect(() => {
@@ -132,6 +134,111 @@ export default function JobDetailsPage({ jobId }: JobDetailsPageProps) {
 
     fetchJobDetails()
   }, [jobId])
+
+  // Check whether the current seeker has already applied
+  useEffect(() => {
+    if (isSessionLoading) return
+
+    if (!user?.id || user.role !== "seeker") {
+      setHasApplied(false)
+      setIsApplicationStatusLoading(false)
+      return
+    }
+
+    let isMounted = true
+
+    const checkApplication = async () => {
+      try {
+        setIsApplicationStatusLoading(true)
+
+        const result = await checkJobApplication(jobId, user.id)
+
+        if (isMounted) {
+          setHasApplied(result.hasApplied)
+        }
+      } catch (err) {
+        console.error("Failed to check application:", err)
+      } finally {
+        if (isMounted) {
+          setIsApplicationStatusLoading(false)
+        }
+      }
+    }
+
+    checkApplication()
+
+    return () => {
+      isMounted = false
+    }
+  }, [jobId, user?.id, user?.role, isSessionLoading])
+
+  // Handle Apply Now / Withdraw Application
+  const handleApplyNow = async () => {
+    if (!job) return
+
+    const applicationPath = `/dashboard/recruiter/jobs/${job.id}`
+
+    if (!user) {
+      router.push(
+        `/sign-in?redirectTo=${encodeURIComponent(applicationPath)}`
+      )
+      return
+    }
+
+    if (user.role !== "seeker") {
+      toast.add({
+        title: "Application unavailable",
+        description: "Only job seekers can apply for jobs.",
+      })
+      return
+    }
+
+    try {
+      setIsApplicationLoading(true)
+
+      if (hasApplied) {
+        // Withdraw existing application
+        await withdrawApplication(job.id, user.id)
+
+        setHasApplied(false)
+
+        toast.add({
+          title: "Application withdrawn",
+          description: "Your application has been withdrawn successfully.",
+        })
+      } else {
+        // Submit new application
+        const application = {
+          jobId: job.id,
+          userId: user.id,
+          email: user.email,
+          jobTitle: job.title,
+          companyName: job.company,
+        }
+
+        const result = await applyToJob(application)
+
+        if (result.success) {
+          setHasApplied(true)
+
+          toast.add({
+            title: "Application submitted",
+            description: "Your application was submitted successfully.",
+          })
+        }
+      }
+    } catch (err) {
+      toast.add({
+        title: "Application failed",
+        description:
+          err instanceof Error
+            ? err.message
+            : "Something went wrong.",
+      })
+    } finally {
+      setIsApplicationLoading(false)
+    }
+  }
 
   // Loading State
   if (isLoading) {
@@ -235,14 +342,25 @@ export default function JobDetailsPage({ jobId }: JobDetailsPageProps) {
               <span>Edit Job</span>
             </Link>
 
-            {/* Apply Now */}
+            {/* Apply / Withdraw Application */}
             <Button
               type="button"
               onClick={handleApplyNow}
-              disabled={status !== "active"}
+              disabled={
+                status !== "active" ||
+                isApplicationLoading ||
+                isApplicationStatusLoading
+              }
+              variant={hasApplied ? "outline" : "default"}
               className="rounded-md px-5 py-5 text-sm font-medium"
             >
-              Apply Now
+              {isApplicationLoading
+                ? "Please wait..."
+                : isApplicationStatusLoading
+                  ? "Checking..."
+                  : hasApplied
+                    ? "Withdraw Application"
+                    : "Apply Now"}
             </Button>
           </div>
         </div>
@@ -366,7 +484,9 @@ export default function JobDetailsPage({ jobId }: JobDetailsPageProps) {
                   Job Category
                 </p>
 
-                <p className="text-sm font-medium capitalize">{job.category}</p>
+                <p className="text-sm font-medium capitalize">
+                  {job.category}
+                </p>
               </div>
 
               <div>

@@ -28,3 +28,11 @@ export type JobData = {
   updatedAt: string
   createdAt: string
 }
+
+export type ApplicationData = {
+  jobId: string
+  userId: string
+  email: string
+  jobTitle: string
+  companyName: string
+}
