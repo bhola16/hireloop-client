@@ -1,8 +1,8 @@
-import type { JobData } from "@/type/Type"
+import { JobData } from "@/type/Type"
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000"
 
-export const getJobs = async (query =""):Promise<JobData[]> => {
+export const getJobs = async (query = ""): Promise<JobData[]> => {
   const res = await fetch(`${BASE_URL}/jobs?${query}`, {
     cache: "no-store",
   })
@@ -10,11 +10,14 @@ export const getJobs = async (query =""):Promise<JobData[]> => {
   if (!res.ok) {
     throw new Error("Failed to fetch jobs")
   }
+
   return res.json()
 }
 
 export const getJobById = async (id: string) => {
-  const res = await fetch(`${BASE_URL}/jobs/${id}`)
+  const res = await fetch(`${BASE_URL}/jobs/${id}`, {
+    cache: "no-store",
+  })
 
   const result = await res.json()
 
@@ -30,4 +33,27 @@ export const getJobById = async (id: string) => {
   }
 }
 
+export const updateJob = async (
+  id: string,
+  recruiterId: string,
+  jobData: Partial<JobData>
+) => {
+  const res = await fetch(`${BASE_URL}/jobs/${id}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      ...jobData,
+      recruiterId,
+    }),
+  })
 
+  const result = await res.json()
+
+  if (!res.ok) {
+    throw new Error(result.message || "Failed to update job")
+  }
+
+  return result
+}

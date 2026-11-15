@@ -49,6 +49,20 @@ export const getJobs = async () => {
 }
 
 
+export const getApplicationsCount = async (
+  query = ""
+): Promise<{ success: boolean; count: number }> => {
+  const response = await fetch(`${BASE_URL}/applications/count?${query}`, {
+    cache: "no-store",
+  })
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch application count")
+  }
+
+  return response.json()
+}
+
 export async function applyToJob(data: ApplicationData) {
   const response = await fetch(`${BASE_URL}/applications`, {
     method: "POST",
@@ -67,6 +81,8 @@ export async function applyToJob(data: ApplicationData) {
 
   return result
 }
+
+
 
 
 

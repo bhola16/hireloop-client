@@ -383,7 +383,7 @@ const BrowseJobsClient = ({ jobs }: BrowseJobsClientProps) => {
                     </div>
 
                     <Link
-                      href={`/dashboard/recruiter/jobs/${job._id}`}
+                      href={`/jobs/${job._id}`}
                       className="rounded-lg bg-green-600 px-5 py-2.5 text-center text-sm font-semibold text-white transition hover:bg-green-700"
                     >
                       View Details

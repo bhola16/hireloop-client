@@ -1,5 +1,7 @@
 export type JobData = {
   _id: string
+  recruiterId?: string
+
   title: string
   company: string
   category: string
@@ -15,6 +17,7 @@ export type JobData = {
 
   salaryMin?: number
   salaryMax?: number
+
   currency: "BDT" | "USD" | "EUR" | "GBP"
 
   description: string
@@ -22,9 +25,11 @@ export type JobData = {
   requirements?: string
 
   skills: string[]
+
   applicationDeadline?: string
 
-  status?: "draft" | "published"
+  status?: "draft" | "published" | "active" | "closed"
+
   updatedAt: string
   createdAt: string
 }

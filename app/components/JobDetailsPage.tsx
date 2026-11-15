@@ -1,11 +1,10 @@
-
 "use client"
 
-import { Button } from "@/components/ui/button"
 import { toast } from "@/components/ui/toast"
 import {
   applyToJob,
   checkJobApplication,
+  getApplicationsCount,
   withdrawApplication,
 } from "@/lib/actions/jobs"
 import { getJobById } from "@/lib/api/jobs"
@@ -19,12 +18,13 @@ import {
   Clock,
   DollarSign,
   MapPin,
-  Pencil,
   Users,
 } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
+import ApplyForJobButton from "./ApplyForJobButton"
+import EditJobDetails from "./EditJobDetails"
 
 type ManagedJob = JobData & {
   id: string
@@ -52,11 +52,7 @@ const formatDate = (date?: string) => {
   })
 }
 
-const formatSalary = (
-  min?: number,
-  max?: number,
-  currency?: string
-) => {
+const formatSalary = (min?: number, max?: number, currency?: string) => {
   if (min == null && max == null) return "Negotiable"
 
   const symbol =
@@ -87,9 +83,7 @@ const getStatus = (status?: string) => {
   return "active"
 }
 
-export default function JobDetailsPage({
-  jobId,
-}: JobDetailsPageProps) {
+export default function JobDetailsPage({ jobId }: JobDetailsPageProps) {
   const [job, setJob] = useState<ManagedJob | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState("")
@@ -176,16 +170,23 @@ export default function JobDetailsPage({
   const handleApplyNow = async () => {
     if (!job) return
 
-    const applicationPath = `/dashboard/recruiter/jobs/${job.id}`
+    const applicationPath = `/jobs/${job.id}`
 
     if (!user) {
-      router.push(
-        `/sign-in?redirectTo=${encodeURIComponent(applicationPath)}`
-      )
+      router.push(`/sign-in?redirectTo=${encodeURIComponent(applicationPath)}`)
       return
-    }
+    } else if (user.role !== "seeker") {
+      const countResult = await getApplicationsCount(
+        `userId=${encodeURIComponent(user.id)}`
+      )
 
-    if (user.role !== "seeker") {
+      console.log(countResult.count)
+
+      if (countResult.count >= 10) {
+        router.push("/payment")
+        return
+      }
+
       toast.add({
         title: "Application unavailable",
         description: "Only job seekers can apply for jobs.",
@@ -231,9 +232,7 @@ export default function JobDetailsPage({
       toast.add({
         title: "Application failed",
         description:
-          err instanceof Error
-            ? err.message
-            : "Something went wrong.",
+          err instanceof Error ? err.message : "Something went wrong.",
       })
     } finally {
       setIsApplicationLoading(false)
@@ -331,37 +330,27 @@ export default function JobDetailsPage({
           </div>
 
           <div className="flex flex-col gap-3 sm:flex-row">
-            {/* Edit Job */}
-            <Link
-              href={`/dashboard/recruiter/jobs/edit/${job.id}`}
-              title="Edit job"
-              aria-label="Edit job"
-              className="flex items-center justify-center gap-2 rounded-md border px-4 py-2 text-sm text-muted-foreground transition hover:bg-muted hover:text-primary"
-            >
-              <Pencil className="size-4" />
-              <span>Edit Job</span>
-            </Link>
-
-            {/* Apply / Withdraw Application */}
-            <Button
-              type="button"
-              onClick={handleApplyNow}
-              disabled={
-                status !== "active" ||
-                isApplicationLoading ||
-                isApplicationStatusLoading
-              }
-              variant={hasApplied ? "outline" : "default"}
-              className="rounded-md px-5 py-5 text-sm font-medium"
-            >
-              {isApplicationLoading
-                ? "Please wait..."
-                : isApplicationStatusLoading
-                  ? "Checking..."
-                  : hasApplied
-                    ? "Withdraw Application"
-                    : "Apply Now"}
-            </Button>
+            {/* Edit Job - Recruiter Only */}
+            {user?.role === "recruiter" && (
+              <EditJobDetails
+                job={job}
+                recruiterId={user.id}
+                onUpdated={(updatedJob) => {
+                  setJob((previous) =>
+                    previous ? { ...previous, ...updatedJob } : previous
+                  )
+                }}
+              />
+            )}
+            {user?.role === "seeker" && (
+              <ApplyForJobButton
+                jobId={job._id}
+                status={job.status}
+                hasApplied={hasApplied}
+                isApplicationStatusLoading={isApplicationStatusLoading}
+                onApplicationChange={setHasApplied}
+              />
+            )}
           </div>
         </div>
       </div>
@@ -484,9 +473,7 @@ export default function JobDetailsPage({
                   Job Category
                 </p>
 
-                <p className="text-sm font-medium capitalize">
-                  {job.category}
-                </p>
+                <p className="text-sm font-medium capitalize">{job.category}</p>
               </div>
 
               <div>
